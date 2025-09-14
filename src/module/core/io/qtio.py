@@ -97,11 +97,11 @@ class QtIOBackend(IOBackend):
 			case (4, 'uint8'):
 				format = ImageFormats.RGBA8888
 				if lossy: target_format = ImageFormats.BC7 if is_strata else ImageFormats.DXT5
-				flags |= vtfpp.VTF.MULTI_BIT_ALPHA.value
+				flags |= vtfpp.VTF.FlagsV0.MULTI_BIT_ALPHA.value
 			case (4, 'float16'):
 				format = ImageFormats.RGBA16161616F
 				if lossy and is_strata: target_format = ImageFormats.BC6H
-				flags |= vtfpp.VTF.MULTI_BIT_ALPHA.value
+				flags |= vtfpp.VTF.FlagsV0.MULTI_BIT_ALPHA.value
 
 		if format == None:
 			raise TypeError(f"Could not match format {image.data.dtype}x{bands}!")
