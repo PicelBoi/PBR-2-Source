@@ -218,3 +218,9 @@ class Image():
 	def flip_v(self):
 		self.data = np.flip(self.data, 1)
 		return self
+
+	# Used to limit roughness between 0.05 and 1.
+	def clip(self, min: "Image|int|float", max: "Image|int|float"):
+		self.data = np.clip(self.data, a_min=0.05, a_max=1)
+		return self
+

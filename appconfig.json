@@ -1,0 +1,57 @@
+{
+	"appTheme": 0,
+	"hijackMode": 0,
+	"hijackPort": 8020,
+	"overwriteVmts": false,
+	"watchTimeout": 500,
+	"targets": {
+		"COLOR": {
+			"postfix": "_basecolor.vtf",
+			"lossy": true,
+			"zip": false,
+			"mipmaps": -1,
+			"mipmapFilter": 101,
+			"flags": 0
+		},
+		"BUMP": {
+			"postfix": "_bump.vtf",
+			"lossy": false,
+			"zip": true,
+			"mipmaps": -1,
+			"mipmapFilter": 2,
+			"flags": 0
+		},
+		"EMIT": {
+			"postfix": "_emit.vtf",
+			"lossy": false,
+			"zip": false,
+			"mipmaps": -1,
+			"mipmapFilter": 101,
+			"flags": 0
+		},
+		"PHONG": {
+			"postfix": "_phongexp.vtf",
+			"lossy": false,
+			"zip": false,
+			"mipmaps": -1,
+			"mipmapFilter": 101,
+			"flags": 0
+		},
+		"ENVMASK": {
+			"postfix": "_envmask.vtf",
+			"lossy": false,
+			"zip": false,
+			"mipmaps": -1,
+			"mipmapFilter": 101,
+			"flags": 0
+		},
+		"MRAO": {
+			"postfix": "_mrao.vtf",
+			"lossy": false,
+			"zip": true,
+			"mipmaps": -1,
+			"mipmapFilter": 101,
+			"flags": 0
+		}
+	}
+}

@@ -2,6 +2,8 @@ src/test/
 dist/
 build/
 venv/
+demo/
+test/
 
 .DS_Store
 *.pyc
