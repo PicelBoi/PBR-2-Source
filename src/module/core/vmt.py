@@ -117,7 +117,7 @@ def make_vmt(mat: Material) -> str:
 		
 		# Are envmap or phong using the fresnel ranges?
 		if MaterialMode.has_phong(mat.mode) or MaterialMode.has_envmap(mat.mode):
-			write(	'	$phongfresnelranges			"[0.1 0.8 1.0]"')
+			write(	'	$phongfresnelranges			"[1 7.5 15]"')
 
 
 		# Do we need to handle self-illumination?
