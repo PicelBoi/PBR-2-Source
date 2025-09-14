@@ -54,7 +54,7 @@ def make_phong_exponent(mat: Material) -> Image:
 
 	assert mat.roughness != None
 	
-	exponent_r = mat.roughness.copy().clip(0.05, 1).pow(-2).mult(0.025)
+	exponent_r = mat.roughness.copy().clip(0.05, 1).pow(-2).mult(0.8)
 	# exponent_g = Image.blank(mat.size, color=(1,))
 	# exponent_b = Image.blank(mat.size, color=(0,))
 	# exponent = Image.merge((exponent_r, exponent_g, exponent_b))

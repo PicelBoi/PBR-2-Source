@@ -112,8 +112,7 @@ def make_vmt(mat: Material) -> str:
 			write(
 					'',
 					'	$phong 1',
-					f'	$phongexponenttexture		"{mat.name}{post(T.PhongExp)}"',
-					'	$phongexponentfactor		32.0',
+					f'	$phongexponenttexture		"{mat.name}{post(T.PhongExp)}"',,
 					'	$phongboost					5.0')
 		
 		# Are envmap or phong using the fresnel ranges?
