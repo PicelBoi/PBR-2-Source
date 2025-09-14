@@ -2,6 +2,7 @@ from typing import Literal
 from .io.image import Image
 from .material import Material, MaterialMode, NormalType
 import numpy as np
+import time
 
 '''
 References:
@@ -55,9 +56,9 @@ def make_phong_exponent(mat: Material) -> Image:
 	assert mat.roughness != None
 	
 	exponent_r = mat.roughness.copy().clip(0.05, 1).pow(-2).mult(0.8)
-	# exponent_g = Image.blank(mat.size, color=(1,))
-	# exponent_b = Image.blank(mat.size, color=(0,))
-	# exponent = Image.merge((exponent_r, exponent_g, exponent_b))
+	exponent_g = Image.blank(mat.size, color=(0,))
+	exponent_b = Image.blank(mat.size, color=(0,))
+	exponent = Image.merge((exponent_r, exponent_g, exponent_b))
 	
 	# return exponent
 	return exponent_r
@@ -78,16 +79,33 @@ def make_envmask(mat: Material) -> Image:
 	''' Creates an envmapmask texture from a material. '''
 
 	assert mat.metallic != None
-	assert mat.roughness != None
 
-	# Decrease exponent when no phong is present to account for lack of reflectivity
-	roughness_exp = 5 if MaterialMode.has_phong(mat.mode) else 3
+	# Ignore this.
+	'''
+	for row in enumerate(mat.roughness.data):
+		for column in enumerate(row[1]):
+			# Somewhere like 0.225 and below envmap is slightly blurry to clearly visible.
+			if column[1][0] <= 0.225:
+				# 0.05 is similar to the actual multiplied color for Blender's Environment Textures on Principled BSDF.
+				envmask.data[row[0]][column[0]] = [0.05]
+				print("Pixel is under 0.225")
+			elif column[1][0] <= 0.3 and column[1][0] > 0.225:
+				# Try to darken 0.05 til 0 (0.3)
+				calculated_color = (column[1] - 0.225) * (1 / 0.075) * 0.05
+				envmask.data[row[0]][column[0]] = [calculated_color]
+				print("Pixel is between 0.225 (57) and 0.3 (77).")
+			else:
+				# Set it to black.
+				envmask.data[row[0]][column[0]] = [0]
+				print("Pixel blacked out")
+	'''
 
-	mask1 = mat.metallic.copy().mult(0.75).add(0.25)
-	mask2 = mat.roughness.copy().invert().pow(roughness_exp)
-	if mat.ao: mask2.mult(mat.ao)
+	# Metalness time. Assume Envmapping is enabled on Metallic textures.
+	envmask = mat.albedo.copy().mult(mat.metallic)
 
-	return mask1.mult(mask2)
+	envmask = Image(envmask.get_channel(0))
+
+	return envmask
 
 
 def make_basecolor(mat: Material) -> Image:
@@ -104,16 +122,6 @@ def make_basecolor(mat: Material) -> Image:
 		if not basetexture.has_transparency():
 			return basetexture.normalize('RGB')
 		return basetexture
-
-	# The mask used to darken the basecolor
-	mask = mat.roughness.copy().invert()
-	mask.mult(mat.metallic)
-	mask.invert()
-
-	if mat.ao is not None:
-		ao_blend = 0.75
-		ao = mat.ao.copy().mult(ao_blend).add(1 - ao_blend)
-		mask.mult(ao)
 
 	# Convert mask to an RGBA image to avoid multiplying the alpha
 	mask_alpha = Image.blank(mask.size, (1,))

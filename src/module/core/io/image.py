@@ -224,3 +224,8 @@ class Image():
 		self.data = np.clip(self.data, a_min=0.05, a_max=1)
 		return self
 
+	# Used to add one texture to an another.
+	def mix(self, b: "Image", fac: "Image"):
+		fac_clipped = fac.copy().clip(0,1)
+		self.data = (fac_clipped.copy().sub(1).data) * self.data + fac_clipped.data * b.data
+		return self

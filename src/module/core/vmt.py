@@ -112,8 +112,8 @@ def make_vmt(mat: Material) -> str:
 			write(
 					'',
 					'	$phong 1',
-					f'	$phongexponenttexture		"{mat.name}{post(T.PhongExp)}"',,
-					'	$phongboost					5.0')
+					f'	$phongexponenttexture		"{mat.name}{post(T.PhongExp)}"',
+					'	$phongboost					2.5')
 		
 		# Are envmap or phong using the fresnel ranges?
 		if MaterialMode.has_phong(mat.mode) or MaterialMode.has_envmap(mat.mode):
@@ -123,8 +123,17 @@ def make_vmt(mat: Material) -> str:
 		# Do we need to handle self-illumination?
 		if MaterialMode.has_selfillum(mat.mode):
 			write(	'',
-					f'	$detail				"{mat.name}{post(T.Emit)}"'
+					f'	$detail				"{mat.name}{post(T.Emit)}"',
 					'	$detailscale		1',
-					'	$detailblendmode	5')
+					'	$detailblendmode	5',
+					'')
+		# Add rim lighting
+		write(
+				'',
+				'	$rimlight				1',
+				'	$rimlightexponent		2',
+				'	$rimlightboost			1',
+				'	$rimlightmask			1'
+		)
 	write('}')
 	return '\n'.join(vmt)
