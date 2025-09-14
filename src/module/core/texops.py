@@ -54,11 +54,17 @@ def make_phong_exponent(mat: Material) -> Image:
 	# [...] albedo tinting is a "work in progress" feature and currently un-supported in the current shader in some branches."
 
 	assert mat.roughness != None
+	assert mat.metallic != None
 	
 	exponent_r = mat.roughness.copy().clip(0.05, 1).pow(-2).mult(0.8)
 	exponent_g = Image.blank(mat.size, color=(0,))
-	exponent_b = Image.blank(mat.size, color=(0,))
-	exponent = Image.merge((exponent_r, exponent_g, exponent_b))
+	exponent_b = mat.metallic
+	exponent_a = Image.blank(mat.size, color=(0.05,))
+
+	additionmtl = mat.metallic.copy().sub(0.05)
+	exponent_a = exponent_a.add(additionmtl)
+
+	exponent = Image.merge((exponent_r, exponent_g, exponent_b, exponent_a))
 	
 	# return exponent
 	return exponent_r
@@ -68,9 +74,22 @@ def make_phong_mask(mat: Material) -> Image:
 	''' Generates a L phong mask texture. '''
 
 	assert mat.roughness != None
+	assert mat.metallic != None
+	assert mat.albedo != None
 
-	mask = mat.roughness.copy().invert().pow(3).mult(1.1)
-	if mat.ao: mask.mult(mat.ao)
+	# Measurements taken from Blender. R = 1 = 0.116086, R = 0 = 0.221116
+	# Frankly, we can simplify this to 0.12 and 0.24,
+	# since there might not be that much of a noticeable difference.
+
+	mask = Image.blank(mat.size, color=(0.12,)).mult(mat.roughness.copy().mult(2))
+	mask.save("mask.png")
+
+	# Metalness time!
+	# Albedo needs to have it's alpha removed.
+	(r, g, b) = mat.albedo.copy().split()[:3]
+	metallicadd = mat.metallic.copy().mult(Image.merge((r,g,b)).grayscale())
+	mask = mask.add(metallicadd)
+	mask.save("maskwmtl.png")
 
 	return mask
 
@@ -79,6 +98,7 @@ def make_envmask(mat: Material) -> Image:
 	''' Creates an envmapmask texture from a material. '''
 
 	assert mat.metallic != None
+	assert mat.albedo != None
 
 	# Ignore this.
 	'''
@@ -101,12 +121,23 @@ def make_envmask(mat: Material) -> Image:
 	'''
 
 	# Metalness time. Assume Envmapping is enabled on Metallic textures.
-	envmask = mat.albedo.copy().mult(mat.metallic)
-
-	envmask = Image(envmask.get_channel(0))
+	(r, g, b) = mat.albedo.copy().split()[:3]
+	envmask = mat.metallic.copy().mult(Image.merge((r,g,b)).grayscale())
 
 	return envmask
 
+def darken_detail(mat: Material) -> Image:
+	assert mat.metallic != None
+	assert mat.albedo != None
+
+	# Darken the metallic parts of the alebdo.
+	darkdetail = mat.albedo.copy().mult(mat.metallic.copy().invert())
+
+	# Use metallic texture as alpha.
+	(r, g, b) = darkdetail.split()[:3]
+	darkdetail = Image.merge((r,g,b,mat.metallic))
+
+	return darkdetail
 
 def make_basecolor(mat: Material) -> Image:
 	''' Creates a basetexture from a material. '''
@@ -117,35 +148,23 @@ def make_basecolor(mat: Material) -> Image:
 
 	basetexture = mat.albedo.copy()
 
+	# Valve, WHY IS AMBIENT OCCLUSION APPLIED TO THE DIFFUSE!
+	# AT LEAST THIS GIVES ME A REASON TO ADD THIS IG
+	if mat.ao is not None:
+		ao_blend = 0.75
+		ao = mat.ao.copy().mult(ao_blend).add(1 - ao_blend)
+		basetexture.mult(ao)
+
 	# Do nothing when converting to PBR
 	if MaterialMode.is_pbr(mat.mode):
 		if not basetexture.has_transparency():
 			return basetexture.normalize('RGB')
 		return basetexture
 
-	# Convert mask to an RGBA image to avoid multiplying the alpha
-	mask_alpha = Image.blank(mask.size, (1,))
-	mask = Image.merge((mask, mask, mask, mask_alpha))
-	basetexture.mult(mask)
-	
-	# Basetexture already contains alpha, don't embed masks
-	if MaterialMode.has_alpha(mat.mode):
-		return basetexture
-	
 	(r, g, b) = basetexture.split()[:3]
 
-	# Do we need to embed the phong mask instead of envmap mask?
-	using_phong = Material.swap_phong_envmap(mat)
-
-	# Phong mask as basetexture alpha
-	if using_phong and MaterialMode.has_phong(mat.mode):
-		# TODO: See below
-		phongmask = make_phong_mask(mat)
-		phongmask.data = phongmask.data.clip(min=(1 / 255))
-		return Image.merge((r, g, b, phongmask))
-
 	# Envmap mask as basetexture alpha
-	elif not using_phong and MaterialMode.embed_envmap(mat.mode):
+	if MaterialMode.embed_envmap(mat.mode):
 		# TODO: This sucks, but srctools has forced my hand. Libsquish needs a flag to account for full-alpha, which we can't give it.
 		# TODO: Verify that this is still an issue with sourcepp bcenc?
 		envmask = make_envmask(mat)
@@ -167,15 +186,10 @@ def make_bumpmap(mat: Material) -> Image:
 		if not mat.height: return mat.normal
 		return Image.merge((r, g, b, mat.height))
 
-	# Do we need to embed the envmap mask instead of phong mask?
-	if Material.swap_phong_envmap(mat):
-		if MaterialMode.embed_envmap(mat.mode):
-			envmask = make_envmask(mat)
-			return Image.merge((r, g, b, envmask))
-	else:
-		if MaterialMode.has_phong(mat.mode):
-			phongmask = make_phong_mask(mat)
-			return Image.merge((r, g, b, phongmask))
+
+	if MaterialMode.has_phong(mat.mode):
+		phongmask = make_phong_mask(mat)
+		return Image.merge((r, g, b, phongmask))
 
 	return Image.merge((r, g, b))
 

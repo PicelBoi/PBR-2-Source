@@ -52,6 +52,14 @@
 			"mipmaps": -1,
 			"mipmapFilter": 101,
 			"flags": 0
+		},
+		"MTLDARKEN": {
+			"postfix": "_mtldarken.vtf",
+			"lossy": false,
+			"zip": true,
+			"mipmaps": -1,
+			"mipmapFilter": 101,
+			"flags": 0
 		}
 	}
 }

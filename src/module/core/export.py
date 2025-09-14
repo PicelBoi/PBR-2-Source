@@ -21,7 +21,7 @@ def export(src: Material) -> list[Texture]:
 	bumpmap = bumpmap.convert('uint8', clip=True)
 	textures.append(Texture(bumpmap, TargetRole.Bumpmap))
 
-	if (MaterialMode.has_selfillum(src.mode) or MaterialMode.is_pbr(src.mode)) and src.emit:
+	if (MaterialMode.has_selfillum(src.mode) or MaterialMode.is_pbr(src.mode) or MaterialMode.has_lg_selfillum(src.mode)) and src.emit:
 			emit = texops.make_emit(src)
 			illum_mask = emit.convert('uint8')
 			textures.append(Texture(illum_mask, TargetRole.Emit))
@@ -41,5 +41,9 @@ def export(src: Material) -> list[Texture]:
 			envmap_mask = texops.make_envmask(src)
 			envmap_mask = envmap_mask.convert('uint8', clip=True)
 			textures.append(Texture(envmap_mask, TargetRole.EnvmapMask))
+		
+		dark_detail = texops.darken_detail(src)
+		dark_detail = dark_detail.convert('uint8', clip=True)
+		textures.append(Texture(dark_detail, TargetRole.MtlDarken))
 
 	return textures

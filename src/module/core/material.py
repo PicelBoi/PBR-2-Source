@@ -10,13 +10,13 @@ class MaterialMode(IntEnum):
 	Phong				= 10	# VertexLitGeneric: Phong mask is in normal map alpha
 	PhongEnvmap			= 11	# VertexLitGeneric: Phong mask is in normal map alpha, envmap uses basetexture alpha
 								# GMOD: phong mask uses basetexture alpha, envmap mask uses normal map alpha
-	PhongEnvmapAlpha	= 12	# VertexLitGeneric: Phong mask is in normal map alpha, envmap uses its own mask
 	PhongEnvmapEmit		= 13	# VertexLitGeneric: Phong mask is in normal map alpha, envmap uses its own mask, emission uses basetexture alpha
 	ALL_VLG				= 19
 
 	Envmap				= 20	# LightmappedGeneric: Envmap uses basetexture alpha
 	EnvmapAlpha			= 21	# LightmappedGeneric: Envmap uses its own mask
-	EnvmapEmit			= 22	# LightmappedGeneric: Envmap uses ist own mask, emission uses basetexture alpha
+	#EnvmapEmit			= 22	# LightmappedGeneric: Envmap uses ist own mask, emission uses basetexture alpha
+	LGPhongEnvmap		= 23	# LightmappedGeneric: Envmap uses basetexture alpha, Phong uses bumpmap alpha
 
 	@staticmethod
 	def is_pbr(mat: 'MaterialMode'): return mat <= 1
@@ -25,7 +25,7 @@ class MaterialMode(IntEnum):
 	def is_model(mat: 'MaterialMode'): return mat == 0 or (mat >= 10 and mat <= 13)
 
 	@staticmethod
-	def has_phong(mat: 'MaterialMode'): return mat >= 10 and mat <= 13
+	def has_phong(mat: 'MaterialMode'): return (mat >= 10 and mat <= 13) or mat == 23
 
 	@staticmethod
 	def has_envmap(mat: 'MaterialMode'): return mat >= 11 and mat <= 22
@@ -37,7 +37,10 @@ class MaterialMode(IntEnum):
 	def has_alpha(mat: 'MaterialMode'): return mat == 12 or mat == 21
 
 	@staticmethod
-	def has_selfillum(mat: 'MaterialMode'): return mat == 13 or mat == 22
+	def has_selfillum(mat: 'MaterialMode'): return mat == 13
+
+	@staticmethod
+	def has_lg_selfillum(mat: 'MaterialMode'): return mat == 22
 
 	@staticmethod
 	def get_shader(mat: 'MaterialMode'):
@@ -47,7 +50,7 @@ class MaterialMode(IntEnum):
 
 	@staticmethod
 	def embed_envmap(mat: 'MaterialMode'):
-		return mat == MaterialMode.Envmap or mat == MaterialMode.PhongEnvmap
+		return mat == MaterialMode.Envmap or mat == MaterialMode.PhongEnvmap or mat == MaterialMode.PhongEnvmapEmit or mat == MaterialMode.LGPhongEnvmap
 
 	@staticmethod
 	def embed_selfillum(mat: 'MaterialMode'):

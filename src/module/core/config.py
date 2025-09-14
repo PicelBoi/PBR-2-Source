@@ -42,6 +42,7 @@ class TargetRole(Enum):
 	PhongExp	= 'PHONG'	# 3
 	EnvmapMask	= 'ENVMASK'	# 4
 	Mrao		= 'MRAO'	# 5 # :3
+	MtlDarken   = 'MTLDARKEN' # 6
 
 @dataclass
 class TargetConfig():
@@ -92,7 +93,8 @@ class AppConfig():
 		TargetRole.Emit:		TargetConfig("_emit.vtf",		False),
 		TargetRole.PhongExp:	TargetConfig("_phongexp.vtf",	False),
 		TargetRole.EnvmapMask:	TargetConfig("_envmask.vtf",	False),
-		TargetRole.Mrao:		TargetConfig("_mrao.vtf",		False, True)
+		TargetRole.Mrao:		TargetConfig("_mrao.vtf",		False, True),
+		TargetRole.MtlDarken:	TargetConfig("_mtldarken.vtf",		False, True)
 	})
 
 	def encode(self):

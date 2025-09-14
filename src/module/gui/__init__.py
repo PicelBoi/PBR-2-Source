@@ -324,12 +324,11 @@ class MainWindow( QMainWindow ):
 			('Model: PBR', MaterialMode.PBRModel),
 			('Model: Phong', MaterialMode.Phong),
 			('Model: Phong+Envmap', MaterialMode.PhongEnvmap),
-			('Model: Phong+Envmap+Alpha', MaterialMode.PhongEnvmapAlpha),
 			('Model: Phong+Envmap+Emission', MaterialMode.PhongEnvmapEmit),
 			('Brush: PBR', MaterialMode.PBRBrush),
 			('Brush: Envmap', MaterialMode.Envmap),
 			('Brush: Envmap+Alpha', MaterialMode.EnvmapAlpha),
-			('Brush: Envmap+Emission', MaterialMode.EnvmapEmit),
+			('Brush: Phong+Envmap', MaterialMode.LGPhongEnvmap),
 		]: modeDropdown.addItem(text, data)
 		modeDropdown.setCurrentData(Preset.mode)
 	

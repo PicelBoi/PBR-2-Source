@@ -80,31 +80,29 @@ def make_vmt(mat: Material) -> str:
 					'	$envmapcontrast				1.0' )
 
 
-			# Packed envmap
-			if MaterialMode.embed_envmap(mat.mode):
-				if Material.swap_phong_envmap(mat):
-					write(
-					'	$normalmapalphaenvmapmask	1',
-					'	$basemapalphaphongmask		1')
-				else:
-					write(
-					'	$basetextureenvmapmask		1')
-			# Unpacked envmap
-			else:
-				write(
-					f'	$envmapmask					"{mat.name}{post(T.EnvmapMask)}"')
+			write(
+			'	$basetextureenvmapmask		1')
 				
 				# Enable fresnel for envmap always
-				if MaterialMode.is_vlg(mat.mode): write(
-					f'	$envmapfresnel				1')
-				else: write(
-					f'	$fresnelreflection			0')
+			if MaterialMode.is_vlg(mat.mode): write(
+				f'	$envmapfresnel				1')
+			else: write(
+				f'	$fresnelreflection			0')
+
+			# Does the game support lightscale?
+			if lightscale:
+				write(
+						f'	$envmaplightscale			{lightscale}' )
+
+		# Add Dark Detail to allow phong albedo tinting without the metalness darkining affecting the specular itself
+		write(
+			'',
+			f'	$detail		"{mat.name}{post(T.MtlDarken)}"',
+			'	$detailscale	1',
+			'	$detailblendmode	2'
+		)
 
 
-		# Does the game support lightscale?
-		if lightscale:
-			write(
-					f'	$envmaplightscale			{lightscale}' )
 
 
 		# Phong base
@@ -113,7 +111,7 @@ def make_vmt(mat: Material) -> str:
 					'',
 					'	$phong 1',
 					f'	$phongexponenttexture		"{mat.name}{post(T.PhongExp)}"',
-					'	$phongboost					2.5')
+					'	$phongboost					5')
 		
 		# Are envmap or phong using the fresnel ranges?
 		if MaterialMode.has_phong(mat.mode) or MaterialMode.has_envmap(mat.mode):
@@ -123,10 +121,17 @@ def make_vmt(mat: Material) -> str:
 		# Do we need to handle self-illumination?
 		if MaterialMode.has_selfillum(mat.mode):
 			write(	'',
-					f'	$detail				"{mat.name}{post(T.Emit)}"',
-					'	$detailscale		1',
-					'	$detailblendmode	5',
-					'')
+					'	$EmissiveBlendEnabled 		1',
+					'	$EmissiveBlendStrength 		1',
+					'	$EmissiveBlendTexture 		vgui/white',
+					f'	$EmissiveBlendBaseTexture	"{mat.name}{post(T.Emit)}"',
+					'	$EmissiveBlendTint 			" [ 1 1 1 ] "',
+					'	$EmissiveBlendScrollVector 	" [ 0 0 ] "',)
+
+		# Do we need to handle self-illumination on brushes?
+		if MaterialMode.has_lg_selfillum(mat.mode):
+			write(	'',
+					'$selfillummask	"{mat.name}{post(T.Emit)}"')
 		# Add rim lighting
 		write(
 				'',
