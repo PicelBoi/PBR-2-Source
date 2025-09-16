@@ -122,10 +122,10 @@ def make_vmt(mat: Material) -> str:
 		if MaterialMode.has_selfillum(mat.mode):
 			write(	'',
 					'	$EmissiveBlendEnabled 		1',
-					'	$EmissiveBlendStrength 		1',
+					'	$EmissiveBlendStrength 		2',
 					'	$EmissiveBlendTexture 		vgui/white',
 					f'	$EmissiveBlendBaseTexture	"{mat.name}{post(T.Emit)}"',
-					'	$EmissiveBlendTint 			" [ 1 1 1 ] "',
+					'	$EmissiveBlendTint 			" [ 10 10 10 ] "',
 					'	$EmissiveBlendScrollVector 	" [ 0 0 ] "',)
 
 		# Do we need to handle self-illumination on brushes?
